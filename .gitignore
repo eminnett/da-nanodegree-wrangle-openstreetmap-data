@@ -1,5 +1,6 @@
 *.bz2
 *.osm
+!example.osm
 *.json
 
 *.pyc
