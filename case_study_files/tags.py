@@ -26,46 +26,65 @@ See the 'process_map' and 'test' functions for examples of the expected format.
 """
 
 
-lower = re.compile(r'^([a-z]|_)*$')
-lower_colon = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
 problemchars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
+numbers = re.compile(r'[0-9]')
+lower = re.compile(r'^([a-z]|_)*$')
+upper = re.compile(r'^([A-Za-z]|_)*$')
+lower_colon = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
+upper_colon = re.compile(r'^([A-Za-z]|_)*:([A-Za-z]|_)*$')
+multiple_colons = re.compile(r'^(([A-Za-z]|_)*:)+([A-Za-z]|_)*$')
 
 
-def key_type(element, keys):
-    if element.tag == "tag":
-        k =  element.get("k")
-        if lower.search(k):
-            key_type = "lower"
-        elif lower_colon.search(k):
-            key_type = "lower_colon"
-        elif problemchars.search(k):
-            key_type = "problemchars"
-        else:
-            key_type = "other"
+def key_type(k, counts, keys):
+    if problemchars.search(k):
+        key_type = "problemchars"
+    elif numbers.search(k):
+        key_type = "numbers"
+    elif lower.search(k):
+        key_type = "lower"
+    elif upper.search(k):
+        key_type = "upper"
+    elif lower_colon.search(k):
+        key_type = "lower_colon"
+    elif upper_colon.search(k):
+        key_type = "upper_colon"
+    elif multiple_colons.search(k):
+        key_type = "multiple_colons"
+    else:
+        key_type = "other"
 
-        keys[key_type] += 1
+    counts[key_type] += 1
+    keys[key_type].append(k)
 
-    return keys
-
+    return counts, keys
 
 
 def process_map(filename):
-    keys = {"lower": 0, "lower_colon": 0, "problemchars": 0, "other": 0}
+    counts = {"lower": 0, "upper": 0, "lower_colon": 0, "upper_colon": 0, "multiple_colons": 0, "numbers": 0, "problemchars": 0, "other": 0}
+    keys = {"lower": [], "upper": [], "lower_colon": [], "upper_colon": [], "multiple_colons": [], "numbers": [], "problemchars": [], "other": []}
+    for tag_key in all_tag_keys(filename):
+        results, others = key_type(tag_key, counts, keys)
+
+    return {'counts': results, 'keys': keys}
+
+def all_tag_keys(filename):
+    results = []
     for _, element in ET.iterparse(filename):
-        keys = key_type(element, keys)
+        if element.tag == "tag":
+            results.append(element.get("k"))
+    return results
 
-    return keys
-
-
+def unique_tag_keys(filename):
+    return set(all_tag_keys(filename))
 
 def test():
     # You can use another testfile 'map.osm' to look at your solution
     # Note that the assertion below will be incorrect then.
     # Note as well that the test function here is only used in the Test Run;
     # when you submit, your code will be checked against a different dataset.
-    keys = process_map('example.osm')
-    pprint.pprint(keys)
-    assert keys == {'lower': 5, 'lower_colon': 0, 'other': 1, 'problemchars': 1}
+    results = process_map('example.osm')
+    pprint.pprint(results['counts'])
+    assert results['counts'] == {"lower": 5, "upper": 1, "lower_colon": 0, "upper_colon": 0, "multiple_colons": 0, "numbers": 0, "problemchars": 1, "other": 0}
 
 
 if __name__ == "__main__":
