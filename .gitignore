@@ -1,3 +1,5 @@
 *.bz2
 *.osm
 *.json
+
+*.pyc
