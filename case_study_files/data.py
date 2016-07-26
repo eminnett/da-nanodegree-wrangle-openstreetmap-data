@@ -135,17 +135,13 @@ def shape_element(element):
         for child in list(element):
             key = child.get("k")
             if key:
-                keys = key.split(":")
+                keys = clean_key(key).split(":")
                 if len(keys) == 1:
                     node[key] = child.get("v")
-                elif len(keys) == 2:
+                else:
                     if keys[0] == "addr":
                         keys[0] = "address"
-                    if keys[0] in node:
-                        if isinstance(node[keys[0]], dict):
-                            node[keys[0]][keys[1]] = child.get("v")
-                    else:
-                        node[keys[0]] = {keys[1]: child.get("v")}
+                    node = handle_nested_keys(node, keys, child.get("v"))
             elif element.tag == "way":
                 if child.tag == "nd":
                     if "node_refs" in node:
@@ -156,6 +152,54 @@ def shape_element(element):
         return node
     else:
         return None
+
+def clean_key(key):
+    key = key.replace(' ', '_').replace('.', '_').replace('&', '_and_')
+    return key.lower()
+
+# This method now handles recursion where the previous implementation did not.
+def handle_nested_keys(node, keys, value):
+    if len(keys) == 2:
+        if keys[1] == 'street':
+          value = clean_street_name(value)
+        if value == None:
+          return node
+
+        if keys[0] in node:
+            if isinstance(node[keys[0]], dict):
+                node[keys[0]][keys[1]] = value
+        else:
+            node[keys[0]] = {keys[1]: value}
+    else:
+        key = keys.pop(0)
+        if key in node:
+          sub_node = node[key]
+        else:
+          sub_node = {}
+        if isinstance(sub_node, dict):
+          node[key] = handle_nested_keys(sub_node, keys, value)
+
+    return node
+
+def clean_street_name(value):
+    if value in ['Avenue 1', 'Avenue 2', 'Avenue 3', 'Avenue 4']:
+      return None
+    elif value == 'Reliuance Way':
+      return 'Reliance Way'
+    elif value[-1] == ',':
+      return value[:-1]
+    elif 'road' in value:
+      return value.replace('road', 'Road')
+    elif 'way' in value:
+      return value.replace('way', 'Way')
+    elif value[-2:] == 'Rd':
+      return value.replace('Rd', 'Road')
+    elif value[-2:] == 'St':
+      return value.replace('St', 'Street')
+    elif value[-3:] == 'Ave':
+      return value.replace('Ave', 'Avenue')
+    else:
+      return value.replace('?', '')
 
 
 def process_map(file_in, pretty = False):
