@@ -61,6 +61,8 @@ def update_name(name, mapping):
         new_names.append(orig_name.replace(old, new))
 
     name = min([n for n in new_names if n != orig_name], key=len)
+    if name == '':
+        name = None
     return name
 
 

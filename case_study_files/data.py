@@ -5,6 +5,7 @@ import pprint
 import re
 import codecs
 import json
+import audit as street_name_auditor
 """
 Your task is to wrangle the data and transform the shape of the data
 into the model we mentioned earlier. The output should be a list of dictionaries
@@ -169,33 +170,26 @@ def handle_nested_keys(node, keys, value):
 
     return node
 
+sreet_name_mapping = {
+    ',': '',
+    '?': '',
+    'Avenue 1': '',
+    'Avenue 2': '',
+    'Avenue 3': '',
+    'Avenue 4': '',
+    'Reliuance': 'Reliance',
+    'road', 'Road',
+    'way', 'Way',
+    "St": "Street",
+    "Ave": "Avenue"
+}
+
 def process_key_and_value(key, value):
     if key == 'addr':
         key = 'address'
     elif key == 'street':
-        value = clean_street_name(value)
+        value = street_name_auditor.update_name(value, sreet_name_mapping)
     return key, value
-
-def clean_street_name(value):
-    if value in ['Avenue 1', 'Avenue 2', 'Avenue 3', 'Avenue 4']:
-        return None
-    elif value == 'Reliuance Way':
-        return 'Reliance Way'
-    elif value[-1] == ',':
-        return value[:-1]
-    elif 'road' in value:
-        return value.replace('road', 'Road')
-    elif 'way' in value:
-        return value.replace('way', 'Way')
-    elif value[-2:] == 'Rd':
-        return value.replace('Rd', 'Road')
-    elif value[-2:] == 'St':
-        return value.replace('St', 'Street')
-    elif value[-3:] == 'Ave':
-        return value.replace('Ave', 'Avenue')
-    else:
-        return value.replace('?', '')
-
 
 def process_map(file_in, pretty = False):
     # You do not need to change this file
