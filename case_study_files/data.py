@@ -173,33 +173,33 @@ def handle_nested_keys(node, keys, value):
     else:
         key = keys.pop(0)
         if key in node:
-          sub_node = node[key]
+            sub_node = node[key]
         else:
-          sub_node = {}
+            sub_node = {}
         if isinstance(sub_node, dict):
-          node[key] = handle_nested_keys(sub_node, keys, value)
+            node[key] = handle_nested_keys(sub_node, keys, value)
 
     return node
 
 def clean_street_name(value):
     if value in ['Avenue 1', 'Avenue 2', 'Avenue 3', 'Avenue 4']:
-      return None
+        return None
     elif value == 'Reliuance Way':
-      return 'Reliance Way'
+        return 'Reliance Way'
     elif value[-1] == ',':
-      return value[:-1]
+        return value[:-1]
     elif 'road' in value:
-      return value.replace('road', 'Road')
+        return value.replace('road', 'Road')
     elif 'way' in value:
-      return value.replace('way', 'Way')
+        return value.replace('way', 'Way')
     elif value[-2:] == 'Rd':
-      return value.replace('Rd', 'Road')
+        return value.replace('Rd', 'Road')
     elif value[-2:] == 'St':
-      return value.replace('St', 'Street')
+        return value.replace('St', 'Street')
     elif value[-3:] == 'Ave':
-      return value.replace('Ave', 'Avenue')
+        return value.replace('Ave', 'Avenue')
     else:
-      return value.replace('?', '')
+        return value.replace('?', '')
 
 
 def process_map(file_in, pretty = False):
