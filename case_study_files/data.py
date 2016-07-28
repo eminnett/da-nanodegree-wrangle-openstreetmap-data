@@ -133,15 +133,10 @@ def shape_element(element):
         if element.get("lat") and element.get("lon"):
             node["pos"] = [float(element.get("lat")), float(element.get("lon"))]
         for child in list(element):
-            key = child.get("k")
-            if key:
-                keys = clean_key(key).split(":")
-                if len(keys) == 1:
-                    node[key] = child.get("v")
-                else:
-                    if keys[0] == "addr":
-                        keys[0] = "address"
-                    node = handle_nested_keys(node, keys, child.get("v"))
+            key_string = child.get("k")
+            if key_string:
+                keys = process_key_string(key_string)
+                node = handle_nested_keys(node, keys, child.get("v"))
             elif element.tag == "way":
                 if child.tag == "nd":
                     if "node_refs" in node:
@@ -153,23 +148,16 @@ def shape_element(element):
     else:
         return None
 
-def clean_key(key):
-    key = key.replace(' ', '_').replace('.', '_').replace('&', '_and_')
-    return key.lower()
+def process_key_string(string):
+    string = string.replace(' ', '_').replace('.', '_').replace('&', '_and_')
+    return string.lower().split(":")
 
 # This method now handles recursion where the previous implementation did not.
 def handle_nested_keys(node, keys, value):
-    if len(keys) == 2:
-        if keys[1] == 'street':
-          value = clean_street_name(value)
-        if value == None:
-          return node
-
-        if keys[0] in node:
-            if isinstance(node[keys[0]], dict):
-                node[keys[0]][keys[1]] = value
-        else:
-            node[keys[0]] = {keys[1]: value}
+    if len(keys) == 1:
+        key, value = process_key_and_value(keys[0], value)
+        if value != None:
+            node[key] = value
     else:
         key = keys.pop(0)
         if key in node:
@@ -180,6 +168,13 @@ def handle_nested_keys(node, keys, value):
             node[key] = handle_nested_keys(sub_node, keys, value)
 
     return node
+
+def process_key_and_value(key, value):
+    if key == 'addr':
+        key = 'address'
+    elif key == 'street':
+        value = clean_street_name(value)
+    return key, value
 
 def clean_street_name(value):
     if value in ['Avenue 1', 'Avenue 2', 'Avenue 3', 'Avenue 4']:
