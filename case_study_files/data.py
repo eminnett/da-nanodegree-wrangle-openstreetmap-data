@@ -170,19 +170,20 @@ def handle_nested_keys(node, keys, value):
 
     return node
 
-sreet_name_mapping = {
-    ',': '',
+sreet_name_mapping = [
+    {',': '',
     '?': '',
-    'Avenue 1': '',
+    "'": ''},
+    {'Avenue 1': '',
     'Avenue 2': '',
     'Avenue 3': '',
     'Avenue 4': '',
-    'Reliuance': 'Reliance',
-    'road', 'Road',
-    'way', 'Way',
-    "St": "Street",
-    "Ave": "Avenue"
-}
+    'Reliuance Way': 'Reliance Way',
+    'road': 'Road',
+    'way': 'Way',
+    'St': 'Street',
+    'Ave': 'Avenue'}
+]
 
 def process_key_and_value(key, value):
     if key == 'addr':

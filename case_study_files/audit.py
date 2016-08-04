@@ -22,11 +22,12 @@ expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square"
             "Trail", "Parkway", "Commons"]
 
 # UPDATE THIS VARIABLE
-mapping = { "St": "Street",
-            "St.": "Street",
-            "Ave": "Avenue",
-            "Rd.": "Road"
-            }
+ordered_mappings = [
+    {".": ""},
+    {"St": "Street",
+    "Ave": "Avenue",
+    "Rd": "Road"}
+]
 
 
 def audit_street_type(street_types, street_name):
@@ -53,16 +54,14 @@ def audit(osmfile):
     osm_file.close()
     return street_types
 
+def update_name(name, ordered_mappings):
+    for mapping in ordered_mappings:
+        for old, new, in mapping.iteritems():
+            if name[-len(old):] == old:
+                name = name[:-len(old)] + new
 
-def update_name(name, mapping):
-    orig_name = name
-    new_names = []
-    for old, new in mapping.iteritems():
-        new_names.append(orig_name.replace(old, new))
-
-    name = min([n for n in new_names if n != orig_name], key=len)
     if name == '':
-        name = None
+        return None
     return name
 
 
@@ -73,7 +72,7 @@ def test():
 
     for st_type, ways in st_types.iteritems():
         for name in ways:
-            better_name = update_name(name, mapping)
+            better_name = update_name(name, ordered_mappings)
             print name, "=>", better_name
             if name == "West Lexington St.":
                 assert better_name == "West Lexington Street"
