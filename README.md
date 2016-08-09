@@ -3,7 +3,7 @@
 #### Data Analyst Nanodegree (Udacity)
 Project submission by Edward Minnett (ed@methodic.io).
 
-July 26th 2016. (Revision 1)
+August 9th 2016. (Revision 2)
 
 ----------
 
